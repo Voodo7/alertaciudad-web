@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // firebase-admin usa APIs nativas de Node: que no lo empaquete el bundler.
+  serverExternalPackages: ["firebase-admin"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" },

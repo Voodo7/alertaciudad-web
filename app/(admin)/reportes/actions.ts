@@ -7,6 +7,7 @@ import {
   toActionError,
   requireString,
 } from "@/lib/actions-helpers";
+import { notificarCambioEstado } from "@/lib/notificaciones";
 
 function num(v: string | undefined): number | null {
   if (v == null || v.trim() === "") return null;
@@ -96,7 +97,7 @@ export async function actualizarReporte(
       },
     });
 
-    // Si el estado cambió, registrar en el historial automáticamente.
+    // Si el estado cambió, registrar en el historial y notificar al usuario.
     if (actual.estadoId !== estadoId) {
       await prisma.historialReporte.create({
         data: {
@@ -104,6 +105,17 @@ export async function actualizarReporte(
           estadoId,
           comentario: "Estado actualizado desde el portal",
         },
+      });
+      const est = await prisma.estadoReporte.findUnique({
+        where: { id: estadoId },
+        select: { nombre: true },
+      });
+      await notificarCambioEstado({
+        usuarioId,
+        reporteId: id,
+        reporteTitulo: titulo.value,
+        estadoNombre: est?.nombre ?? "actualizado",
+        comentario: "Estado actualizado desde el portal",
       });
     }
 
@@ -141,6 +153,26 @@ export async function cambiarEstadoReporte(
         data: { reporteId: id, estadoId, comentario: comentario?.trim() || null },
       }),
     ]);
+
+    // Notificar al usuario dueño del reporte (Firestore -> app móvil).
+    const rep = await prisma.reporte.findUnique({
+      where: { id },
+      select: {
+        usuarioId: true,
+        titulo: true,
+        estado: { select: { nombre: true } },
+      },
+    });
+    if (rep) {
+      await notificarCambioEstado({
+        usuarioId: rep.usuarioId,
+        reporteId: id,
+        reporteTitulo: rep.titulo,
+        estadoNombre: rep.estado.nombre,
+        comentario,
+      });
+    }
+
     revalidatePath("/reportes");
     revalidatePath(`/reportes/${id}`);
     revalidatePath("/dashboard");

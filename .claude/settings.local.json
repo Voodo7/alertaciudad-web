@@ -9,7 +9,9 @@
       "Bash(git rm *)",
       "Bash(git add *)",
       "Bash(git commit -q -m ' *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Read(//c/Users/cfgav/Downloads/PROYECTO/**)",
+      "Bash(rm -f \"app/src/main/java/com/example/appalertaciudad/data/repository/AuthRepositoryImpl.kt\")"
     ]
   }
 }

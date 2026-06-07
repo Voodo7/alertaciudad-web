@@ -6,6 +6,7 @@ import {
   serializeReporte,
   reporteInclude,
 } from "@/lib/api";
+import { notificarCambioEstado } from "@/lib/notificaciones";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,15 @@ export async function PATCH(
         },
       }),
     ]);
+
+    // Notificar al usuario dueño del reporte (Firestore -> app móvil).
+    await notificarCambioEstado({
+      usuarioId: actualizado.usuarioId,
+      reporteId: actualizado.id,
+      reporteTitulo: actualizado.titulo,
+      estadoNombre: estado.nombre,
+      comentario: comentario ?? null,
+    });
 
     return json(serializeReporte(actualizado));
   } catch (e) {
