@@ -5,7 +5,11 @@
       "PowerShell(node --version)",
       "PowerShell(npm --version)",
       "PowerShell(npx --version)",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m ' *)",
+      "Bash(git config *)"
     ]
   }
 }
