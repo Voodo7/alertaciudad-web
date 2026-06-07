@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id          Int       @id @default(autoincrement())
+  nombre      String
+  correo      String    @unique
+  firebaseUid String?   @unique
+  creadoEn    DateTime  @default(now())
+  reportes    Reporte[]
+}
+
+model Categoria {
+  id       Int       @id @default(autoincrement())
+  nombre   String    @unique
+  icono    String?
+  reportes Reporte[]
+}
+
+model Zona {
+  id       Int       @id @default(autoincrement())
+  nombre   String    @unique
+  reportes Reporte[]
+}
+
+model EstadoReporte {
+  id        Int                @id @default(autoincrement())
+  nombre    String             @unique
+  reportes  Reporte[]
+  historial HistorialReporte[]
+}
+
+model Reporte {
+  id            Int                @id @default(autoincrement())
+  titulo        String
+  descripcion   String
+  fotoUrl       String?
+  lat           Float?
+  lng           Float?
+  sincronizado  Boolean            @default(true)
+  categoriaId   Int
+  zonaId        Int?
+  estadoId      Int
+  usuarioId     Int
+  creadoEn      DateTime           @default(now())
+  actualizadoEn DateTime           @updatedAt
+
+  categoria Categoria          @relation(fields: [categoriaId], references: [id])
+  zona      Zona?              @relation(fields: [zonaId], references: [id])
+  estado    EstadoReporte      @relation(fields: [estadoId], references: [id])
+  usuario   Usuario            @relation(fields: [usuarioId], references: [id])
+  historial HistorialReporte[]
+}
+
+model HistorialReporte {
+  id         Int      @id @default(autoincrement())
+  reporteId  Int
+  estadoId   Int
+  comentario String?
+  creadoEn   DateTime @default(now())
+
+  reporte Reporte       @relation(fields: [reporteId], references: [id], onDelete: Cascade)
+  estado  EstadoReporte @relation(fields: [estadoId], references: [id])
+}
+
+model Administrador {
+  id           Int      @id @default(autoincrement())
+  nombre       String
+  correo       String   @unique
+  passwordHash String
+  creadoEn     DateTime @default(now())
+}
