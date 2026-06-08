@@ -8,12 +8,13 @@ datasource db {
 }
 
 model Usuario {
-  id          Int       @id @default(autoincrement())
+  id          Int                @id @default(autoincrement())
   nombre      String
-  correo      String    @unique
-  firebaseUid String?   @unique
-  creadoEn    DateTime  @default(now())
+  correo      String             @unique
+  firebaseUid String?            @unique
+  creadoEn    DateTime           @default(now())
   reportes    Reporte[]
+  tokens      DispositivoToken[]
 }
 
 model Categoria {
@@ -75,4 +76,14 @@ model Administrador {
   correo       String   @unique
   passwordHash String
   creadoEn     DateTime @default(now())
+}
+
+// Token FCM de un dispositivo, para enviar notificaciones push (app cerrada).
+model DispositivoToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  usuarioId Int
+  creadoEn  DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
