@@ -47,6 +47,70 @@ export async function GET(
   }
 }
 
+// PATCH /api/reportes/:id -> edita campos del reporte (lo usa el dueño desde la app)
+// body: { titulo?, descripcion?, fotoUrl?, idCategoria? }
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const reporteId = Number(id);
+    if (Number.isNaN(reporteId)) return apiError("id invalido", 400);
+
+    const body = await req.json().catch(() => null);
+    if (!body) return apiError("Body JSON invalido", 400);
+
+    const { titulo, descripcion, fotoUrl, idCategoria } = body as {
+      titulo?: string;
+      descripcion?: string;
+      fotoUrl?: string | null;
+      idCategoria?: number | string;
+    };
+
+    const data: Record<string, unknown> = {};
+    if (typeof titulo === "string" && titulo.trim()) data.titulo = titulo.trim();
+    if (typeof descripcion === "string" && descripcion.trim())
+      data.descripcion = descripcion.trim();
+    if (fotoUrl !== undefined) data.fotoUrl = fotoUrl || null;
+    if (idCategoria != null && !Number.isNaN(Number(idCategoria)))
+      data.categoriaId = Number(idCategoria);
+
+    if (Object.keys(data).length === 0) {
+      return apiError("No hay campos para actualizar", 400);
+    }
+
+    const actualizado = await prisma.reporte.update({
+      where: { id: reporteId },
+      data,
+      include: reporteInclude,
+    });
+
+    return json(serializeReporte(actualizado));
+  } catch (e) {
+    console.error("PATCH /api/reportes/:id", e);
+    return apiError("No se pudo actualizar el reporte", 500);
+  }
+}
+
+// DELETE /api/reportes/:id -> elimina el reporte (y su historial en cascada)
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const reporteId = Number(id);
+    if (Number.isNaN(reporteId)) return apiError("id invalido", 400);
+
+    await prisma.reporte.delete({ where: { id: reporteId } });
+    return json({ ok: true });
+  } catch (e) {
+    console.error("DELETE /api/reportes/:id", e);
+    return apiError("No se pudo eliminar el reporte", 500);
+  }
+}
+
 export function OPTIONS() {
   return preflight();
 }
