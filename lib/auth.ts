@@ -26,6 +26,55 @@ function createToken(adminId: number): string {
   return `${payload}.${sign(payload)}`;
 }
 
+const b64url = (o: object) =>
+  Buffer.from(JSON.stringify(o)).toString("base64url");
+
+/**
+ * Crea un JWT (HS256) firmado con SESSION_SECRET.
+ * Estructura estándar: base64url(header).base64url(payload).firma
+ */
+export function createJwt(
+  payload: Record<string, unknown>,
+  expiresInSec = MAX_AGE
+): string {
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "HS256", typ: "JWT" };
+  const body = { ...payload, iat: now, exp: now + expiresInSec };
+  const data = `${b64url(header)}.${b64url(body)}`;
+  const signature = crypto
+    .createHmac("sha256", getSecret())
+    .update(data)
+    .digest("base64url");
+  return `${data}.${signature}`;
+}
+
+/** Verifica un JWT HS256 y devuelve su payload, o null si es inválido/expirado. */
+export function verifyJwt(token: string | undefined): Record<string, unknown> | null {
+  if (!token) return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [header, payload, signature] = parts;
+  const expected = crypto
+    .createHmac("sha256", getSecret())
+    .update(`${header}.${payload}`)
+    .digest("base64url");
+  if (
+    signature.length !== expected.length ||
+    !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
+  ) {
+    return null;
+  }
+  try {
+    const body = JSON.parse(Buffer.from(payload, "base64url").toString());
+    if (typeof body.exp === "number" && body.exp < Math.floor(Date.now() / 1000)) {
+      return null;
+    }
+    return body;
+  } catch {
+    return null;
+  }
+}
+
 function verifyToken(token: string | undefined): number | null {
   if (!token) return null;
   const [payload, signature] = token.split(".");
