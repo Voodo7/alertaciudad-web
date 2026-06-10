@@ -53,14 +53,15 @@ https://<tu-proyecto>.vercel.app/api
 
 Endpoints disponibles (con CORS habilitado):
 
-- `GET  /api/categorias`
-- `GET  /api/zonas`
-- `GET  /api/estados`
+- `GET  /api/categorias` · `POST /api/categorias` · `PUT/DELETE /api/categorias/:id`
+- `GET  /api/zonas` · `POST /api/zonas` · `PUT/DELETE /api/zonas/:id`
+- `GET  /api/estados` · `POST /api/estados` · `PUT/DELETE /api/estados/:id`
 - `GET  /api/reportes?usuarioId=`
 - `GET  /api/reportes/:id`
 - `POST /api/reportes`
 - `PATCH /api/reportes/:id/estado`
-- `POST /api/usuarios`
+- `GET  /api/usuarios` · `POST /api/usuarios` · `PUT/DELETE /api/usuarios/:id`
+- `POST /api/admin/login`
 
 ## 4. Tras el primer deploy
 

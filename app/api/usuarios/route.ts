@@ -3,6 +3,20 @@ import { json, apiError, preflight } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
+// GET /api/usuarios -> lista de usuarios (para el panel administrativo)
+export async function GET() {
+  try {
+    const usuarios = await prisma.usuario.findMany({
+      orderBy: { id: "asc" },
+      select: { id: true, nombre: true, correo: true, creadoEn: true },
+    });
+    return json(usuarios);
+  } catch (e) {
+    console.error("GET /api/usuarios", e);
+    return apiError("No se pudo obtener los usuarios", 500);
+  }
+}
+
 // POST /api/usuarios -> registra/sincroniza un usuario
 // body: { nombre, correo, firebaseUid }
 export async function POST(req: Request) {
